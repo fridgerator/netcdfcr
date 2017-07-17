@@ -13,7 +13,7 @@ Add this to your application's `shard.yml`:
 ```yaml
 dependencies:
   netcdf:
-    github: fridgerator/netcdf
+    github: fridgerator/netcdfcr
 ```
 
 ## Usage
