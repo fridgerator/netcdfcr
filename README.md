@@ -2,7 +2,7 @@
 
 **WIP**
 
-Crystal bindings to libnetcd v 4.
+Crystal bindings to libnetcdf v4.
 
 Right now this just contains the c bindings.  I hope to write some short helper methods similar to python netcdf4 - [link](http://unidata.github.io/netcdf4-python/)
 
