@@ -59,6 +59,8 @@ lib LibNetcdf4
   NC_FORMAT_NETCDF4_CLASSIC = (4)
   NC_FORMAT_64BIT_DATA      = (5)
   NC_FORMAT_CDF5            = NC_FORMAT_64BIT_DATA
+  NC_MAX_DIMS               =  65536
+  NC_MAX_VARS               = 524288
 
   fun nc_inq_libvers : LibC::Char*
   fun nc_inq_libvers : LibC::Char*
