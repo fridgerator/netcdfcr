@@ -7,13 +7,8 @@ module Netcdf
     property ndims : Int32
 
     def initialize(@parent_id, @id)
-      var_type = Int32.new(0)
-      LibNetcdf4.nc_inq_var(@parent_id, @id, nil, pointerof(var_type), out ndims, nil, nil)
-      @var_type = var_type
-      @ndims = ndims
-
       name_buffer = Bytes.new(LibNetcdf4::NC_MAX_CHAR)
-      LibNetcdf4.nc_inq_varname(@parent_id, @id, name_buffer)
+      LibNetcdf4.nc_inq_var(@parent_id, @id, name_buffer, out @var_type, out @ndims, nil, nil)
       @name = String.new(name_buffer).gsub("\u0000", "").gsub("\u0001", "")
     end
 
@@ -127,7 +122,6 @@ module Netcdf
     end
 
     # Boolean switch for shuffle
-    # fun nc_inq_var_deflate(ncid : LibC::Int, varid : LibC::Int, shufflep : LibC::Int*, deflatep : LibC::Int*, deflate_levelp : LibC::Int*) : LibC::Int
     def compression_shuffle
       LibNetcdf4.nc_inq_var_deflate(@parent_id, @id, out v, nil, nil)
       v == 1
@@ -143,6 +137,55 @@ module Netcdf
     def compression_level
       LibNetcdf4.nc_inq_var_deflate(@parent_id, @id, nil, nil, out v)
       v
+    end
+
+    # nc_get_vara(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : Void*) : LibC::Int
+    def read(*args)
+      if args.size != @ndims
+        raise Exception.new("Wrong number of arguments")
+      end
+
+      if (@var_type < LibNetcdf4::NC_BYTE || @var_type > LibNetcdf4::NC_INT64) && @var_type != LibNetcdf4::NC_STRING
+        raise Exception.new("Variable type not supported yet")
+      end
+
+      pos = Array(UInt64).new(@ndims)
+      size = Array(UInt64).new(@ndims)
+
+      (0..@ndims - 1).each do |i|
+        pos << args[i].to_u64
+        size << 1.to_u64
+      end
+
+      case @var_type
+      when LibNetcdf4::NC_BYTE
+        b = UInt8.new(0)
+        LibNetcdf4.nc_get_att(@parent_id, @id, nil, pointerof(b))
+        puts b
+        b
+      when LibNetcdf4::NC_CHAR
+        print "do NC_CHAR"
+      when LibNetcdf4::NC_SHORT
+        print "do NC_SHORT"
+      when LibNetcdf4::NC_INT
+        val = Int32.new(0)
+        LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, pointerof(val))
+        puts "val : #{val}"
+      when LibNetcdf4::NC_FLOAT
+        print "do NC_FLOAT"
+      when LibNetcdf4::NC_DOUBLE
+        val = Float64.new(0.0)
+        LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, pointerof(val))
+        val
+      when LibNetcdf4::NC_UBYTE
+        print "do NC_UBYTE"
+      when LibNetcdf4::NC_USHORT
+        print "do NC_USHORT"
+      when LibNetcdf4::NC_UINT
+        print "do NC_UINT"
+      else
+        raise Exception.new("Variable type not supported yet")
+      end
     end
   end
 end
