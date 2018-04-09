@@ -6,8 +6,11 @@ module Netcdf
       LibNetcdf4.nc_inq_natts(@id, out num_attributes)
 
       (0..num_attributes - 1).map do |i|
-        ncid = Int32.new(i)
-        NcAtt.new(@id, ncid)
+        name_buffer = Bytes.new(LibNetcdf4::NC_MAX_CHAR)
+        LibNetcdf4.nc_inq_attname(@parent_id, @id, i, name_buffer)
+        name = String.new(name_buffer).gsub("\u0000", "").gsub("\u0001", "")
+
+        NcAtt.new(@name, @parent_id, @id, i)
       end
     end
 

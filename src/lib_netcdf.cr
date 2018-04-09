@@ -1,3 +1,5 @@
+# https://github.com/Unidata/netcdf-c/blob/fe0d0ac28c08738e5485f63d6436f677d03cb438/include/netcdf.h
+
 @[Link("netcdf")]
 lib LibNetcdf4
   NC_GLOBAL                 = -1
@@ -59,8 +61,17 @@ lib LibNetcdf4
   NC_FORMAT_NETCDF4_CLASSIC = (4)
   NC_FORMAT_64BIT_DATA      = (5)
   NC_FORMAT_CDF5            = NC_FORMAT_64BIT_DATA
-  NC_MAX_DIMS               =  65536
-  NC_MAX_VARS               = 524288
+  NC_MAX_DIMS               = 1024
+  NC_MAX_VARS               = 8192
+  NC_MAX_NAME               =  256
+  NX_MAX_VAR_DIMS           = 1024
+  NC_ENDIAN_NATIVE          =    0
+  NC_ENDIAN_LITTLE          =    1
+  NC_ENDIAN_BIG             =    2
+  NC_NOCHECKSUM             =    0
+  NC_FLETCHER32             =    1
+  NC_CHUNKED                =    0
+  NC_CONTIGUOUS             =    1
 
   fun nc_inq_libvers : LibC::Char*
   fun nc_inq_libvers : LibC::Char*

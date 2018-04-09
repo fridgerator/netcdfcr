@@ -1,20 +1,52 @@
 module Netcdf
   class NcAtt
+    property ncid : Int32
     property parent_id : Int32
     property id : Int32
     property name : String
-    property value : Int32 | Int64 | String | Float32 | Float64
+    property att_type : Int32
+    property att_len : UInt64
 
-    def initialize(@parent_id, @id)
-      name_buffer = Bytes.new(LibNetcdf4::NC_MAX_CHAR)
+    def initialize(@name, @ncid, @parent_id, @id)
+      LibNetcdf4.nc_inq_att(@ncid, @parent_id, @name, out @att_type, out @att_len)
+    end
 
-      LibNetcdf4.nc_inq_attname(@parent_id, LibNetcdf4::NC_GLOBAL, @id, name_buffer)
-      @name = String.new(name_buffer).gsub("\u0000", "").gsub("\u0001", "")
-      LibNetcdf4.nc_inq_attlen(@parent_id, LibNetcdf4::NC_GLOBAL, @name, out length)
+    def value
+      if (@att_type < LibNetcdf4::NC_BYTE || @att_type > LibNetcdf4::NC_INT64) && @att_type != LibNetcdf4::NC_STRING
+        raise Exception.new("Variable type not supported yet")
+      end
 
-      value_buffer = Bytes.new(length)
-      LibNetcdf4.nc_get_att_text(@parent_id, LibNetcdf4::NC_GLOBAL, @name, value_buffer)
-      @value = String.new(value_buffer).gsub("\u0000", "").gsub("\u0001", "")
+      case @att_type
+      when LibNetcdf4::NC_BYTE
+        b = UInt8.new(0)
+        LibNetcdf4.nc_get_att(@parent_id, @id, nil, pointerof(b))
+        puts b
+        b
+      when LibNetcdf4::NC_SHORT
+        print "do NC_SHORT"
+      when LibNetcdf4::NC_INT
+        print "do NC_INT"
+      when LibNetcdf4::NC_FLOAT
+        print "do NC_FLOAT"
+      when LibNetcdf4::NC_DOUBLE
+        print "do NC_DOUBLE"
+      when LibNetcdf4::NC_UBYTE
+        print "do NC_UBYTE"
+      when LibNetcdf4::NC_USHORT
+        print "do NC_USHORT"
+      when LibNetcdf4::NC_UINT
+        print "do NC_UINT"
+      when LibNetcdf4::NC_INT64
+        print "do NC_INT64"
+      when LibNetcdf4::NC_UINT64
+        print "do NC_UINT64"
+      when LibNetcdf4::NC_STRING, LibNetcdf4::NC_CHAR
+        buffer = Bytes.new(@att_len)
+        LibNetcdf4.nc_get_att(@ncid, @parent_id, @name, buffer)
+        String.new(buffer)
+      else
+        raise Exception.new("Variable type not supported yet")
+      end
     end
   end
 end
