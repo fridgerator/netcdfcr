@@ -159,30 +159,33 @@ module Netcdf
 
       case @var_type
       when LibNetcdf4::NC_BYTE
-        b = UInt8.new(0)
-        LibNetcdf4.nc_get_att(@parent_id, @id, nil, pointerof(b))
-        puts b
-        b
+        LibNetcdf4.nc_get_vara_ubyte(@parent_id, @id, pos, size, out sbyte_val)
+        sbyte_val
       when LibNetcdf4::NC_CHAR
-        print "do NC_CHAR"
+        char_val = UInt8.new(0)
+        LibNetcdf4.nc_get_vara_uchar(@parent_id, @id, pos, size, pointerof(char_val))
+        char_val
       when LibNetcdf4::NC_SHORT
-        print "do NC_SHORT"
+        LibNetcdf4.nc_get_vara_short(@parent_id, @id, pos, size, out short_val)
+        short_val
       when LibNetcdf4::NC_INT
-        val = Int32.new(0)
-        LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, pointerof(val))
-        puts "val : #{val}"
+        LibNetcdf4.nc_get_vara_int(@parent_id, @id, pos, size, out int_val)
+        int_val
       when LibNetcdf4::NC_FLOAT
-        print "do NC_FLOAT"
+        LibNetcdf4.nc_get_vara_float(@parent_id, @id, pos, size, out float_val)
+        float_val
       when LibNetcdf4::NC_DOUBLE
-        val = Float64.new(0.0)
-        LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, pointerof(val))
-        val
+        LibNetcdf4.nc_get_vara_double(@parent_id, @id, pos, size, out double_val)
+        double_val
       when LibNetcdf4::NC_UBYTE
-        print "do NC_UBYTE"
+        LibNetcdf4.nc_get_vara_ubyte(@parent_id, @id, pos, size, out ubyte_val)
+        ubyte_val
       when LibNetcdf4::NC_USHORT
-        print "do NC_USHORT"
+        LibNetcdf4.nc_get_vara_ushort(@parent_id, @id, pos, size, out ushort_val)
+        ushort_val
       when LibNetcdf4::NC_UINT
-        print "do NC_UINT"
+        LibNetcdf4.nc_get_vara_uint(@parent_id, @id, pos, size, out uint_val)
+        uint_val
       else
         raise Exception.new("Variable type not supported yet")
       end

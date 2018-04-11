@@ -141,6 +141,14 @@ lib LibNetcdf4
   fun nc_get_var1(ncid : LibC::Int, varid : LibC::Int, indexp : LibC::SizeT*, ip : Void*) : LibC::Int
   fun nc_put_vara(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, op : Void*) : LibC::Int
   fun nc_get_vara(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : Void*) : LibC::Int
+  fun nc_get_vara_double(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : LibC::Double*)
+  fun nc_get_vara_int(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : LibC::Int*)
+  fun nc_get_vara_short(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : LibC::Short*)
+  fun nc_get_vara_float(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : LibC::Float*)
+  fun nc_get_vara_ushort(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : LibC::UShort*)
+  fun nc_get_vara_ubyte(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : UInt8*)
+  fun nc_get_vara_uint(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : UInt8*)
+  fun nc_get_vara_uchar(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : UInt8*)
   alias X__DarwinPtrdiffT = LibC::Long
   alias PtrdiffT = X__DarwinPtrdiffT
   fun nc_put_vars(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, stridep : PtrdiffT*, op : Void*) : LibC::Int
