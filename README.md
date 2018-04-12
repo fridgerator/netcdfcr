@@ -1,10 +1,10 @@
 # netcdf
 
-**WIP**
+**WIP - not ready for production use**
 
 Crystal bindings to libnetcdf v4.
 
-Right now this just contains the c bindings.  I hope to write some short helper methods similar to python netcdf4 - [link](http://unidata.github.io/netcdf4-python/)
+Based on [swillner's NodeJS](https://github.com/swillner/netcdf4-js) bindings
 
 ## Installation
 
