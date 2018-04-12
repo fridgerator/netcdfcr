@@ -163,7 +163,7 @@ module Netcdf
         total_size = total_size * s
       end
 
-      read_type(pos, size, total_size)
+      get_val(pos, size, total_size)
     end
 
     # Reads and returns a single value at positions given as for `write`
@@ -185,10 +185,10 @@ module Netcdf
         size << 1.to_u64
       end
 
-      read_type(pos, size, total_size)[0]
+      get_val(pos, size, total_size)[0]
     end
 
-    private def read_type(pos, size, total_size)
+    private def get_val(pos, size, total_size)
       case @var_type
       when LibNetcdf4::NC_BYTE, LibNetcdf4::NC_UBYTE
         sbyte_val = Bytes.new(total_size)
