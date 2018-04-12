@@ -139,7 +139,34 @@ module Netcdf
       v
     end
 
-    # nc_get_vara(ncid : LibC::Int, varid : LibC::Int, startp : LibC::SizeT*, countp : LibC::SizeT*, ip : Void*) : LibC::Int
+    # Reads and returns an array of values (cf. "[Specify a Hyperslab](https://www.unidata.ucar.edu/software/netcdf/docs/programming_notes.html#specify_hyperslab)")
+    # at positions and sizes given for each dimension, `readSlice(pos1, size1, pos2, size2, ...)`
+    # e.g. `readSlice(2, 3, 4, 2)` gives an array of the values at position 2 for 3 steps along the
+    # first dimension and position 4 for 2 steps along the second one.
+    def read_slice(*args)
+      if args.size != @ndims * 2
+        raise Exception.new("Wrong number of arguments")
+      end
+
+      if (@var_type < LibNetcdf4::NC_BYTE || @var_type > LibNetcdf4::NC_INT64) && @var_type != LibNetcdf4::NC_STRING
+        raise Exception.new("Variable type not supported yet")
+      end
+
+      pos = Array(UInt64).new(@ndims)
+      size = Array(UInt64).new(@ndims)
+      total_size = 1
+
+      (0..@ndims - 1).each do |i|
+        pos << args[2 * i].to_u64
+        s = args[2 * i + 1].to_u64
+        size << s
+        total_size = total_size * s
+      end
+
+      read_type(pos, size, total_size)
+    end
+
+    # Reads and returns a single value at positions given as for `write`
     def read(*args)
       if args.size != @ndims
         raise Exception.new("Wrong number of arguments")
@@ -151,40 +178,45 @@ module Netcdf
 
       pos = Array(UInt64).new(@ndims)
       size = Array(UInt64).new(@ndims)
+      total_size = 1
 
       (0..@ndims - 1).each do |i|
         pos << args[i].to_u64
         size << 1.to_u64
       end
 
+      read_type(pos, size, total_size)[0]
+    end
+
+    private def read_type(pos, size, total_size)
       case @var_type
-      when LibNetcdf4::NC_BYTE
-        LibNetcdf4.nc_get_vara_ubyte(@parent_id, @id, pos, size, out sbyte_val)
+      when LibNetcdf4::NC_BYTE, LibNetcdf4::NC_UBYTE
+        sbyte_val = Bytes.new(total_size)
+        LibNetcdf4.nc_get_vara_ubyte(@parent_id, @id, pos, size, sbyte_val)
         sbyte_val
       when LibNetcdf4::NC_CHAR
-        char_val = UInt8.new(0)
-        LibNetcdf4.nc_get_vara_uchar(@parent_id, @id, pos, size, pointerof(char_val))
+        char_val = Bytes.new(total_size)
+        LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, char_val)
         char_val
       when LibNetcdf4::NC_SHORT
-        LibNetcdf4.nc_get_vara_short(@parent_id, @id, pos, size, out short_val)
+        short_val = Slice(Int16).new(total_size)
+        LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, short_val)
         short_val
       when LibNetcdf4::NC_INT
-        LibNetcdf4.nc_get_vara_int(@parent_id, @id, pos, size, out int_val)
+        int_val = Slice(Int32).new(total_size)
+        LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, int_val)
         int_val
-      when LibNetcdf4::NC_FLOAT
-        LibNetcdf4.nc_get_vara_float(@parent_id, @id, pos, size, out float_val)
-        float_val
-      when LibNetcdf4::NC_DOUBLE
-        LibNetcdf4.nc_get_vara_double(@parent_id, @id, pos, size, out double_val)
+      when LibNetcdf4::NC_DOUBLE, LibNetcdf4::NC_FLOAT
+        double_val = Slice(Float64).new(total_size)
+        LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, double_val)
         double_val
-      when LibNetcdf4::NC_UBYTE
-        LibNetcdf4.nc_get_vara_ubyte(@parent_id, @id, pos, size, out ubyte_val)
-        ubyte_val
       when LibNetcdf4::NC_USHORT
-        LibNetcdf4.nc_get_vara_ushort(@parent_id, @id, pos, size, out ushort_val)
+        ushort_val = Slice(Int16).new(total_size)
+        LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, ushort_val)
         ushort_val
       when LibNetcdf4::NC_UINT
-        LibNetcdf4.nc_get_vara_uint(@parent_id, @id, pos, size, out uint_val)
+        uint_val = Slice(Int32).new(total_size)
+        LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, uint_val)
         uint_val
       else
         raise Exception.new("Variable type not supported yet")
