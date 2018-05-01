@@ -3,7 +3,7 @@ require "./netcdf/shared/*"
 require "./netcdf/types/*"
 require "./netcdf/*"
 
-module Netcdf
+module NetCDF
   def self.call_netcdf(&block)
     result = yield
     if result != LibNetcdf4::NC_NOERR

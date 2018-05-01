@@ -1,5 +1,5 @@
-module Netcdf
-  class NcVar
+module NetCDF
+  class Variable
     property parent_id : Int32
     property id : Int32
     property name : String
@@ -10,7 +10,7 @@ module Netcdf
       name_buffer = Bytes.new(LibNetcdf4::NC_MAX_CHAR)
       var_type = uninitialized Int32
       ndims = uninitialized Int32
-      Netcdf.call_netcdf { LibNetcdf4.nc_inq_var(@parent_id, @id, name_buffer, pointerof(var_type), pointerof(ndims), nil, nil) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_var(@parent_id, @id, name_buffer, pointerof(var_type), pointerof(ndims), nil, nil) }
       @var_type = var_type
       @ndims = ndims
       @name = String.new(name_buffer).gsub("\u0000", "").gsub("\u0001", "")
@@ -18,20 +18,20 @@ module Netcdf
 
     def attributes
       num_attributes = uninitialized Int32
-      Netcdf.call_netcdf { LibNetcdf4.nc_inq_varnatts(@parent_id, @id, pointerof(num_attributes)) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_varnatts(@parent_id, @id, pointerof(num_attributes)) }
 
       (0..num_attributes - 1).map do |i|
         name_buffer = Bytes.new(LibNetcdf4::NC_MAX_NAME)
-        Netcdf.call_netcdf { LibNetcdf4.nc_inq_attname(@parent_id, @id, i, name_buffer) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_attname(@parent_id, @id, i, name_buffer) }
         name = String.new(name_buffer).gsub("\u0000", "")
-        NcAtt.new(name, @parent_id, @id, i)
+        Attribute.new(name, @parent_id, @id, i)
       end
     end
 
     # Endianness: "little", "big", or "native"
     def endianness
       v = uninitialized Int32
-      Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_endian(@parent_id, @id, pointerof(v)) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_endian(@parent_id, @id, pointerof(v)) }
       case v
       when LibNetcdf4::NC_ENDIAN_LITTLE
         "little"
@@ -47,7 +47,7 @@ module Netcdf
     # Checksum mode: "none" or "fletcher32"
     def checksum_mode
       v = uninitialized Int32
-      Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fletcher32(@parent_id, @id, pointerof(v)) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fletcher32(@parent_id, @id, pointerof(v)) }
       case v
       when LibNetcdf4::NC_NOCHECKSUM
         "none"
@@ -61,7 +61,7 @@ module Netcdf
     # Chunk mode: "contiguous", or "chunked"
     def chunk_mode
       v = uninitialized Int32
-      Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_chunking(@parent_id, @id, pointerof(v), nil) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_chunking(@parent_id, @id, pointerof(v), nil) }
       case v
       when LibNetcdf4::NC_CONTIGUOUS
         "contiguous"
@@ -75,14 +75,14 @@ module Netcdf
     # Array of chunk sizes, one size per dimension
     def chunk_sizes
       sizes = Slice(UInt64).new(@ndims)
-      Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_chunking(@parent_id, @id, nil, sizes) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_chunking(@parent_id, @id, nil, sizes) }
       sizes.to_a.map(&.to_i)
     end
 
-    # Boolean swith for fill mode
+    # Boolean switch for fill mode
     def fill_mode
       v = uninitialized Int32
-      Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, pointerof(v), nil) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, pointerof(v), nil) }
       v == 1
     end
 
@@ -91,39 +91,39 @@ module Netcdf
       case @var_type
       when LibNetcdf4::NC_BYTE
         byte_val = uninitialized UInt32
-        Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(byte_val)) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(byte_val)) }
         byte_val
       when LibNetcdf4::NC_CHAR
         char_val = uninitialized Char
-        Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(char_val)) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(char_val)) }
         char_val
       when LibNetcdf4::NC_SHORT
         short_val = uninitialized UInt16
-        Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(short_val)) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(short_val)) }
         short_val
       when LibNetcdf4::NC_INT
         int_val = uninitialized Int32
-        Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(int_val)) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(int_val)) }
         int_val
       when LibNetcdf4::NC_FLOAT
         float_val = uninitialized Float32
-        Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(float_val)) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(float_val)) }
         float_val
       when LibNetcdf4::NC_DOUBLE
         double_val = uninitialized Float64
-        Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(double_val)) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(double_val)) }
         double_val
       when LibNetcdf4::NC_UBYTE
         ubyte_val = uninitialized UInt8
-        Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(ubyte_val)) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(ubyte_val)) }
         ubyte_val
       when LibNetcdf4::NC_USHORT
         ushort_val = uninitialized UInt16
-        Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(ushort_val)) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(ushort_val)) }
         ushort_val
       when LibNetcdf4::NC_UINT
         uint_val = uninitialized UInt32
-        Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(uint_val)) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_fill(@parent_id, @id, nil, pointerof(uint_val)) }
         uint_val
       else
         raise Exception.new("Variable type not supported yet")
@@ -133,21 +133,21 @@ module Netcdf
     # Boolean switch for shuffle
     def compression_shuffle
       v = uninitialized Int32
-      Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_deflate(@parent_id, @id, pointerof(v), nil, nil) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_deflate(@parent_id, @id, pointerof(v), nil, nil) }
       v == 1
     end
 
     # Boolean switch for compression
     def compression_deflate
       v = uninitialized Int32
-      Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_deflate(@parent_id, @id, nil, pointerof(v), nil) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_deflate(@parent_id, @id, nil, pointerof(v), nil) }
       v == 1
     end
 
     # Compression level (1-9)
     def compression_level
       v = uninitialized Int32
-      Netcdf.call_netcdf { LibNetcdf4.nc_inq_var_deflate(@parent_id, @id, nil, nil, pointerof(v)) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_var_deflate(@parent_id, @id, nil, nil, pointerof(v)) }
       v
     end
 
@@ -204,31 +204,31 @@ module Netcdf
       case @var_type
       when LibNetcdf4::NC_BYTE, LibNetcdf4::NC_UBYTE
         sbyte_val = Bytes.new(total_size)
-        Netcdf.call_netcdf { LibNetcdf4.nc_get_vara_ubyte(@parent_id, @id, pos, size, sbyte_val) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara_ubyte(@parent_id, @id, pos, size, sbyte_val) }
         sbyte_val
       when LibNetcdf4::NC_CHAR
         char_val = Bytes.new(total_size)
-        Netcdf.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, char_val) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, char_val) }
         char_val
       when LibNetcdf4::NC_SHORT
         short_val = Slice(Int16).new(total_size)
-        Netcdf.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, short_val) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, short_val) }
         short_val
       when LibNetcdf4::NC_INT
         int_val = Slice(Int32).new(total_size)
-        Netcdf.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, int_val) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, int_val) }
         int_val
       when LibNetcdf4::NC_DOUBLE, LibNetcdf4::NC_FLOAT
         double_val = Slice(Float64).new(total_size)
-        Netcdf.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, double_val) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, double_val) }
         double_val
       when LibNetcdf4::NC_USHORT
         ushort_val = Slice(Int16).new(total_size)
-        Netcdf.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, ushort_val) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, ushort_val) }
         ushort_val
       when LibNetcdf4::NC_UINT
         uint_val = Slice(Int32).new(total_size)
-        Netcdf.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, uint_val) }
+        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, uint_val) }
         uint_val
       else
         raise Exception.new("Variable type not supported yet")
