@@ -1,6 +1,6 @@
 # netcdf
 
-**WIP - not ready for production use**
+**WIP - This library is read only right now, and there are no tests yet**
 
 Crystal bindings to libnetcdf v4.
 
