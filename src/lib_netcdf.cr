@@ -4,11 +4,12 @@
 lib LibNetcdf4
   NC_NOERR                  =  0
   NC_GLOBAL                 = -1
-  NC_NAT                    =  0
-  NC_BYTE                   =  1
-  NC_CHAR                   =  2
-  NC_SHORT                  =  3
-  NC_INT                    =  4
+  NC2_ERR                   = (-1)
+  NC_NAT                    = 0
+  NC_BYTE                   = 1
+  NC_CHAR                   = 2
+  NC_SHORT                  = 3
+  NC_INT                    = 4
   NC_LONG                   = NC_INT
   NC_FLOAT                  =  5
   NC_DOUBLE                 =  6
@@ -73,6 +74,7 @@ lib LibNetcdf4
   NC_FLETCHER32             =    1
   NC_CHUNKED                =    0
   NC_CONTIGUOUS             =    1
+  NC_UNLIMITED              =    0
 
   fun nc_inq_libvers : LibC::Char*
   fun nc_inq_libvers : LibC::Char*

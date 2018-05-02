@@ -15,6 +15,10 @@ module NetCDF
       @length = length
     end
 
+    def initialize(@name, @ncid, @parent_id, @id, @attribute_type)
+      @length = UInt64.new(0)
+    end
+
     def value
       if (@attribute_type < LibNetcdf4::NC_BYTE || @attribute_type > LibNetcdf4::NC_INT64) && @attribute_type != LibNetcdf4::NC_STRING
         raise Exception.new("Variable type not supported yet")
@@ -59,6 +63,27 @@ module NetCDF
         String.new(buffer)
       else
         raise Exception.new("Variable type not supported yet")
+      end
+    end
+
+    def set_value(val)
+      if (@attribute_type < LibNetcdf4::NC_BYTE || @attribute_type > LibNetcdf4::NC_UINT) && @attribute_type != LibNetcdf4::NC_STRING
+        raise Exception.new("Variable type not supported yet")
+      end
+
+      # nc_put_att(ncid : LibC::Int, varid : LibC::Int, name : LibC::Char*, xtype : NcType, len : LibC::SizeT, op : Void*)
+      # nc_put_att_text(ncid : LibC::Int, varid : LibC::Int, name : LibC::Char*, len : LibC::SizeT, op : LibC::Char*)
+      if val.is_a?(UInt32)
+        v = val
+        NetCDF.call_netcdf { LibNetcdf4.nc_put_att(@parent_id, @id, name, LibNetcdf4::NC_UINT, 1, pointerof(v)) }
+      elsif val.is_a?(Int32)
+        v = val
+        NetCDF.call_netcdf { LibNetcdf4.nc_put_att(@parent_id, @id, name, LibNetcdf4::NC_INT, 1, pointerof(v)) }
+      elsif val.is_a?(Float64)
+        v = val
+        NetCDF.call_netcdf { LibNetcdf4.nc_put_att(@parent_id, @id, name, LibNetcdf4::NC_DOUBLE, 1, pointerof(v)) }
+      else
+        NetCDF.call_netcdf { LibNetcdf4.nc_put_att_text(@parent_id, @id, name, val.length, value) }
       end
     end
   end
