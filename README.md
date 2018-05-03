@@ -20,8 +20,6 @@ dependencies:
 
 ## Usage
 
-**Right now, this library only reads netcdf files.  Write is not yet supported**
-
 ```crystal
 require "netcdf"
 
