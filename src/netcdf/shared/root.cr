@@ -2,19 +2,6 @@ module NetCDF
   module Root
     extend self
 
-    # Returns an array of attributes
-    def attributes
-      num_attributes = uninitialized Int32
-      NetCDF.call_netcdf { LibNetcdf4.nc_inq_natts(@id, pointerof(num_attributes)) }
-
-      (0..num_attributes - 1).map do |i|
-        name_buffer = Bytes.new(LibNetcdf4::NC_MAX_CHAR)
-        NetCDF.call_netcdf { LibNetcdf4.nc_inq_attname(@parent_id, @id, i, name_buffer) }
-        name = String.new(name_buffer).gsub("\u0000", "").gsub("\u0001", "")
-        Attribute.new(@name, @parent_id, @id, i)
-      end
-    end
-
     # Returns an array of dimensoins
     def dimensions
       buffer = Slice(Int32).new(LibNetcdf4::NC_MAX_DIMS)
@@ -84,21 +71,10 @@ module NetCDF
         raise Exception.new("Unsupported variable type")
       end
 
-      ndims = dimension_ids.size
-      first_dim_id = dimension_ids.first
-
       new_id = uninitialized Int32
-      NetCDF.call_netcdf { LibNetcdf4.nc_def_var(@id, name, var_type, ndims, pointerof(first_dim_id), pointerof(new_id)) }
+      NetCDF.call_netcdf { LibNetcdf4.nc_def_var(@id, name, var_type, dimension_ids.size, dimension_ids, pointerof(new_id)) }
 
       Variable.new(@id, new_id)
-    end
-
-    def add_attribute(name, type_str, value)
-      var_type = NetCDF.get_type(type_str)
-
-      attribute = Attribute.new(name, LibNetcdf4::NC_GLOBAL, @id, 1, var_type)
-      attribute.set_value(value)
-      attribute
     end
   end
 end

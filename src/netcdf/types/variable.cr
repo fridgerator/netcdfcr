@@ -24,8 +24,16 @@ module NetCDF
         name_buffer = Bytes.new(LibNetcdf4::NC_MAX_NAME)
         NetCDF.call_netcdf { LibNetcdf4.nc_inq_attname(@parent_id, @id, i, name_buffer) }
         name = String.new(name_buffer).gsub("\u0000", "")
-        Attribute.new(name, @parent_id, @id, i)
+        Attribute.new(name, @parent_id, @id)
       end
+    end
+
+    def add_attribute(name, type_str, value)
+      var_type = NetCDF.get_type(type_str)
+
+      attribute = Attribute.new(name, @parent_id, @id, var_type)
+      attribute.set_value(value)
+      attribute
     end
 
     # Endianness: "little", "big", or "native"

@@ -2,6 +2,7 @@ module NetCDF
   class File
     include Root
 
+    property parent_id : Int32
     property id : Int32
 
     def self.open(path : String, mode : String = "r")
@@ -22,7 +23,7 @@ module NetCDF
       self.new(id)
     end
 
-    def initialize(@id); end
+    def initialize(@id, @parent_id = LibNetcdf4::NC_GLOBAL); end
 
     # Close file
     def close
