@@ -137,4 +137,4 @@ Methods:
 
 ## Contributors
 
-- [[your-github-name]](https://github.com/fridgerator) Nick Franken - creator, maintainer
+- [fridgerator](https://github.com/fridgerator) Nick Franken - creator, maintainer
