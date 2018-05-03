@@ -27,11 +27,11 @@ module NetCDF
         bytes_val = Bytes.new(length)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, bytes_val) }
         length == 1 ? bytes_val[0] : bytes_val
-      when LibNetcdf4::NC_SHORT
+      when LibNetcdf4::NC_SHORT, LibNetcdf4::NC_USHORT
         short_val = Slice(Int16).new(length)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, short_val) }
         length == 1 ? short_val[0] : short_val
-      when LibNetcdf4::NC_INT
+      when LibNetcdf4::NC_INT, LibNetcdf4::NC_UINT
         int_val = Slice(Int32).new(length)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, int_val) }
         length == 1 ? int_val[0] : int_val
@@ -39,14 +39,6 @@ module NetCDF
         double_val = Slice(Float64).new(length)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, double_val) }
         length == 1 ? double_val[0] : double_val
-      when LibNetcdf4::NC_USHORT
-        ushort_val = Slice(Int16).new(length)
-        NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, ushort_val) }
-        length == 1 ? ushort_val[0] : ushort_val
-      when LibNetcdf4::NC_UINT
-        uint_val = Slice(Int32).new(length)
-        NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, uint_val) }
-        length == 1 ? uint_val[0] : uint_val
       when LibNetcdf4::NC_INT64
         i64_val = Slice(Int64).new(length)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, i64_val) }

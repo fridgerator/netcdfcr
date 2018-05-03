@@ -2,7 +2,7 @@ module NetCDF
   module Root
     extend self
 
-    # Returns an array of dimensoins
+    # Returns an array of dimensions
     def dimensions
       buffer = Slice(Int32).new(LibNetcdf4::NC_MAX_DIMS)
       num_dimensions = uninitialized Int32
