@@ -165,7 +165,7 @@ module NetCDF
     # first dimension and position 4 for 2 steps along the second one.
     def read_slice(*args)
       if args.size != @ndims * 2
-        raise Exception.new("Wrong number of arguments")
+        raise Exception.new("Arguments does not match number of dimension")
       end
 
       if (@var_type < LibNetcdf4::NC_BYTE || @var_type > LibNetcdf4::NC_INT64) && @var_type != LibNetcdf4::NC_STRING
@@ -183,13 +183,13 @@ module NetCDF
         total_size = total_size * s
       end
 
-      get_val(pos, size, total_size)
+      get_val(pos, size, total_size).to_a
     end
 
     # Reads and returns a single value at positions given as for `write`
     def read(*args)
       if args.size != @ndims
-        raise Exception.new("Wrong number of arguments")
+        raise Exception.new("Arguments does not match number of dimension")
       end
 
       if (@var_type < LibNetcdf4::NC_BYTE || @var_type > LibNetcdf4::NC_INT64) && @var_type != LibNetcdf4::NC_STRING
@@ -208,21 +208,93 @@ module NetCDF
       get_val(pos, size, total_size)[0]
     end
 
+    # Write a value at positions given
+    # `write(2, 3, "a")` writes "a" at position 2 along the first dimension and position 3 along the second one
+    def write(*args)
+      if args.size != @ndims + 1
+        raise Exception.new("Arguments does not match number of dimension")
+      end
+
+      pos = Array(UInt64).new(@ndims)
+      size = Array(UInt64).new(@ndims)
+
+      (0..@ndims - 1).each do |i|
+        pos << args[i].to_u64
+        size << 1.to_u64
+      end
+
+      case @var_type
+      when LibNetcdf4::NC_BYTE, LibNetcdf4::NC_UBYTE, LibNetcdf4::NC_CHAR
+        byte_val = UInt8.new(args[ndims])
+        NetCDF.call_netcdf { LibNetcdf4.nc_put_vara(@parent_id, @id, pos, size, pointerof(byte_val)) }
+      when LibNetcdf4::NC_SHORT, LibNetcdf4::NC_USHORT
+        short_val = Int16.new(args[ndims])
+        NetCDF.call_netcdf { LibNetcdf4.nc_put_vara(@parent_id, @id, pos, size, pointerof(short_val)) }
+      when LibNetcdf4::NC_INT, LibNetcdf4::NC_UINT
+        int_val = Int32.new(args[ndims])
+        NetCDF.call_netcdf { LibNetcdf4.nc_put_vara(@parent_id, @id, pos, size, pointerof(int_val)) }
+      when LibNetcdf4::NC_DOUBLE, LibNetcdf4::NC_FLOAT
+        double_val = Float64.new(args[ndims])
+        NetCDF.call_netcdf { LibNetcdf4.nc_put_vara(@parent_id, @id, pos, size, pointerof(double_val)) }
+      else
+        raise Exception.new("Variable type not supported yet")
+      end
+    end
+
+    # Write values from an array (array must be of same type) at positions and sizes given for each dimension
+    # `writeSlice(2, 3, 4, 2, [0, 1, 2, 3, 4, 5])` writes the array at position 2 for 3 steps along the first dimension and position 4 for 2 step along the second one
+    def write_slice(*args)
+      if args.size != 2 * @ndims + 1
+        raise Exception.new("Arguments does not match number of dimension")
+      end
+
+      pos = Array(UInt64).new(@ndims)
+      size = Array(UInt64).new(@ndims)
+      total_size = 1
+
+      (0..@ndims - 1).each do |i|
+        pos << args[2 * i].as(Int32).to_u64
+        s = args[2 * i + 1].as(Int32).to_u64
+        size << s
+        total_size = total_size * s
+      end
+
+      val = args[2 * @ndims].as(Array)
+
+      if val.size != total_size
+        raise Exception.new("Wrong size of array")
+      end
+
+      correct_type = true
+      case @var_type
+      when LibNetcdf4::NC_BYTE, LibNetcdf4::NC_UBYTE, LibNetcdf4::NC_CHAR
+        correct_type = false unless val.is_a?(Array(UInt8))
+      when LibNetcdf4::NC_SHORT, LibNetcdf4::NC_USHORT
+        correct_type = false unless val.is_a?(Array(Int16))
+      when LibNetcdf4::NC_INT, LibNetcdf4::NC_UINT
+        correct_type = false unless val.is_a?(Array(Int32))
+      when LibNetcdf4::NC_DOUBLE, LibNetcdf4::NC_FLOAT
+        correct_type = false unless val.is_a?(Array(Float64))
+      end
+
+      unless correct_type
+        raise Exception.new("Wrong array type")
+      end
+
+      NetCDF.call_netcdf { LibNetcdf4.nc_put_vara(@parent_id, @id, pos, size, val.to_unsafe) }
+    end
+
     private def get_val(pos, size, total_size)
       case @var_type
-      when LibNetcdf4::NC_BYTE, LibNetcdf4::NC_UBYTE
+      when LibNetcdf4::NC_BYTE, LibNetcdf4::NC_UBYTE, LibNetcdf4::NC_CHAR
         sbyte_val = Bytes.new(total_size)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_vara_ubyte(@parent_id, @id, pos, size, sbyte_val) }
         sbyte_val
-      when LibNetcdf4::NC_CHAR
-        char_val = Bytes.new(total_size)
-        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, char_val) }
-        char_val
-      when LibNetcdf4::NC_SHORT
+      when LibNetcdf4::NC_SHORT, LibNetcdf4::NC_USHORT
         short_val = Slice(Int16).new(total_size)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, short_val) }
         short_val
-      when LibNetcdf4::NC_INT
+      when LibNetcdf4::NC_INT, LibNetcdf4::NC_UINT
         int_val = Slice(Int32).new(total_size)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, int_val) }
         int_val
@@ -230,14 +302,6 @@ module NetCDF
         double_val = Slice(Float64).new(total_size)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, double_val) }
         double_val
-      when LibNetcdf4::NC_USHORT
-        ushort_val = Slice(Int16).new(total_size)
-        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, ushort_val) }
-        ushort_val
-      when LibNetcdf4::NC_UINT
-        uint_val = Slice(Int32).new(total_size)
-        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, uint_val) }
-        uint_val
       else
         raise Exception.new("Variable type not supported yet")
       end

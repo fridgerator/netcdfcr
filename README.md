@@ -8,7 +8,7 @@ Based on [swillner's NodeJS](https://github.com/swillner/netcdf4-js) bindings
 
 ## Installation
 
-NetCDF must be installed: `brew install hdf5 netcdf`
+NetCDF must be [installed](https://www.unidata.ucar.edu/software/netcdf/docs/getting_and_building_netcdf.html): `brew install hdf5 netcdf`
 
 Add this to your application's `shard.yml`:
 
@@ -126,6 +126,8 @@ Methods:
 * `read_slice` : Reads and returns an array of values (cf. "[Specify a Hyperslab](https://www.unidata.ucar.edu/software/netcdf/docs/programming_notes.html#specify_hyperslab)") at positions and sizes given for each dimension, `readSlice(pos1, size1, pos2, size2, ...)` e.g. `readSlice(2, 3, 4, 2)` gives an array of the values at position 2 for 3 steps along the first dimension and position 4 for 2 steps along the second one.
 * `read` : Reads and returns a single value at positions, one argument per dimension
 * `add_attribute` : Creates an attribute for a variable
+* `write` : Write a value at positions given, `write(2, 3, "a")` writes "a" at position 2 along the first dimension and position 3 along the second one
+* `write_slice` : Write values from an array (array must be of same type) at positions and sizes given for each dimension. `writeSlice(2, 3, 4, 2, [0, 1, 2, 3, 4, 5])` writes the array at position 2 for 3 steps along the first dimension and position 4 for 2 step along the second one
 
 ## Contributing
 
