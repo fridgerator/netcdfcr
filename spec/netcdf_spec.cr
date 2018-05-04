@@ -1,6 +1,20 @@
 require "./spec_helper"
 
 describe NetCDF do
+  describe NetCDF::File do
+    it "should create an attribute" do
+      file = open_file("w")
+      file.add_attribute("time_zone", "string", "America/Chicago")
+      file.attributes.size.should eq 1
+
+      attr = file.attributes[0]
+      attr.name.should eq "time_zone"
+      attr.value.should eq "America/Chicago"
+
+      file.close
+    end
+  end
+
   describe NetCDF::Group do
     it "should create a group" do
       file = open_file("w")

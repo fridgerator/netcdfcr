@@ -58,6 +58,8 @@ Methods:
 * `add_group` : Adds a group to a file
 * `add_dimension` : Adds a dimension to a file
 * `add_variable` : Adds a variable to a file
+* `attributes` : Returns an array of global attributes
+* `add_attribute` : Creates a global attribute
 
 #### Group
 

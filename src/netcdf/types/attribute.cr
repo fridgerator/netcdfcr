@@ -71,7 +71,8 @@ module NetCDF
         v = val
         NetCDF.call_netcdf { LibNetcdf4.nc_put_att(@parent_id, @id, name, LibNetcdf4::NC_DOUBLE, 1, pointerof(v)) }
       else
-        NetCDF.call_netcdf { LibNetcdf4.nc_put_att_text(@parent_id, @id, name, val.length, value) }
+        v = val
+        NetCDF.call_netcdf { LibNetcdf4.nc_put_att_text(@parent_id, @id, name, val.size, v.to_unsafe) }
       end
     end
   end

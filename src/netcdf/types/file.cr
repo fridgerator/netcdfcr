@@ -34,5 +34,25 @@ module NetCDF
     def sync
       NetCDF.call_netcdf { LibNetcdf4.nc_sync(@id) }
     end
+
+    def attributes
+      num_attributes = uninitialized Int32
+      NetCDF.call_netcdf { LibNetcdf4.nc_inq_natts(@id, pointerof(num_attributes)) }
+
+      (0..num_attributes - 1).map do |i|
+        name_buffer = Bytes.new(LibNetcdf4::NC_MAX_NAME)
+        NetCDF.call_netcdf { LibNetcdf4.nc_inq_attname(@id, LibNetcdf4::NC_GLOBAL, i, name_buffer) }
+        name = String.new(name_buffer).gsub("\u0000", "")
+        Attribute.new(name, @id, LibNetcdf4::NC_GLOBAL)
+      end
+    end
+
+    def add_attribute(name, type_str, value)
+      var_type = NetCDF.get_type(type_str)
+
+      attribute = Attribute.new(name, @id, LibNetcdf4::NC_GLOBAL, var_type)
+      attribute.set_value(value)
+      attribute
+    end
   end
 end
