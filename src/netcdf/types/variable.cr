@@ -233,9 +233,12 @@ module NetCDF
       when LibNetcdf4::NC_INT, LibNetcdf4::NC_UINT
         int_val = Int32.new(args[ndims])
         NetCDF.call_netcdf { LibNetcdf4.nc_put_vara(@parent_id, @id, pos, size, pointerof(int_val)) }
-      when LibNetcdf4::NC_DOUBLE, LibNetcdf4::NC_FLOAT
+      when LibNetcdf4::NC_DOUBLE
         double_val = Float64.new(args[ndims])
         NetCDF.call_netcdf { LibNetcdf4.nc_put_vara(@parent_id, @id, pos, size, pointerof(double_val)) }
+      when LibNetcdf4::NC_FLOAT
+        float_val = Float32.new(args[ndims])
+        NetCDF.call_netcdf { LibNetcdf4.nc_put_vara(@parent_id, @id, pos, size, pointerof(float_val)) }
       else
         raise Exception.new("Variable type not supported yet")
       end
@@ -273,8 +276,10 @@ module NetCDF
         correct_type = false unless val.is_a?(Array(Int16))
       when LibNetcdf4::NC_INT, LibNetcdf4::NC_UINT
         correct_type = false unless val.is_a?(Array(Int32))
-      when LibNetcdf4::NC_DOUBLE, LibNetcdf4::NC_FLOAT
+      when LibNetcdf4::NC_DOUBLE
         correct_type = false unless val.is_a?(Array(Float64))
+      when LibNetcdf4::NC_FLOAT
+        correct_type = false unless val.is_a?(Array(Float32))
       end
 
       unless correct_type
@@ -298,10 +303,14 @@ module NetCDF
         int_val = Slice(Int32).new(total_size)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, int_val) }
         int_val
-      when LibNetcdf4::NC_DOUBLE, LibNetcdf4::NC_FLOAT
+      when LibNetcdf4::NC_DOUBLE
         double_val = Slice(Float64).new(total_size)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, double_val) }
         double_val
+      when LibNetcdf4::NC_FLOAT
+        float_val = Slice(Float32).new(total_size)
+        NetCDF.call_netcdf { LibNetcdf4.nc_get_vara(@parent_id, @id, pos, size, float_val) }
+        float_val
       else
         raise Exception.new("Variable type not supported yet")
       end

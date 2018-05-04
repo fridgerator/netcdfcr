@@ -35,10 +35,14 @@ module NetCDF
         int_val = Slice(Int32).new(length)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, int_val) }
         length == 1 ? int_val[0] : int_val
-      when LibNetcdf4::NC_FLOAT, LibNetcdf4::NC_DOUBLE
+      when LibNetcdf4::NC_DOUBLE
         double_val = Slice(Float64).new(length)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, double_val) }
         length == 1 ? double_val[0] : double_val
+      when LibNetcdf4::NC_FLOAT
+        float_val = Slice(Float32).new(length)
+        NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, float_val) }
+        length == 1 ? float_val[0] : float_val
       when LibNetcdf4::NC_INT64
         i64_val = Slice(Int64).new(length)
         NetCDF.call_netcdf { LibNetcdf4.nc_get_att(@parent_id, @id, @name, i64_val) }
